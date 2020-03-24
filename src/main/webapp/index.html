@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список заданий</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="item.js"></script>
+</head>
+<body>
+<div class="container">
+    <h3 style="text-align: center; margin-bottom: 20px">Список всех заданий</h3>
+    <h4 style="text-align: center"><label class="checkbox-inline check"><input type="checkbox" id="show-all" value="">Показать
+        все
+        задания</label></h4>
+    <table class="table table-condensed">
+        <thead class="thread-todo">
+        <tr>
+            <th>#</th>
+            <th>Описание задания</th>
+            <th>Дата</th>
+            <th>Статус выполнения</th>
+            <th>Обновить</th>
+            <th>Удалить</th>
+        </tr>
+        </thead>
+        <tbody class="list-todo"></tbody>
+    </table>
+    <hr>
+    <button style="float: right; margin-right: 10px" type="button" class="btn btn-success"
+            id="create-item">Создать новую задачу
+    </button>
+</div>
+
+<!-- Add new task modal-->
+<div class="container">
+    <div class="modal fade" id="new-item" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content item-content" style="background-color: #DFF0D8">
+                <div class="modal-header item-header" style="border-bottom: 1px solid #5CB85C">
+                    <button type="button" class="close" data-dismiss="modal" title="Закрыть">&times;</button>
+                    <h4 class="modal-title" style="text-align: center">Добавление нового задания</h4>
+                </div>
+                <div class="modal-body item-body"></div>
+                <div class="modal-footer" style="border-top: 1px solid #5CB85C">
+                    <button type="button" class="btn btn-success btn-block" id="close-item">Создать и
+                        закрыть окно
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update task modal-->
+<div class="container">
+    <div class="modal fade" id="show-update-item" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content update-item-content" style="background-color: #DFF0D8">
+                <div class="modal-header update-item-header" style="border-bottom: 1px solid #5CB85C">
+                    <button type="button" class="close update-close" data-dismiss="modal" title="Закрыть">&times;</button>
+                    <h4 class="modal-title" style="text-align: center">Обновление задания</h4>
+                </div>
+                <div class="modal-body update-item-body"></div>
+                <div class="modal-footer" style="border-top: 1px solid #5CB85C">
+                    <button type="button" class="btn btn-success btn-block" id="close-update-item">Обновить и
+                        закрыть окно
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
