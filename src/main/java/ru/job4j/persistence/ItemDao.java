@@ -4,9 +4,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import ru.job4j.models.Item;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ItemDao {
     private static final Logger LOG = LogManager.getLogger(ItemDao.class.getName());
@@ -17,6 +19,9 @@ public class ItemDao {
     private static final String ERROR_MESSAGE_FIND_BY_STATUS = "Смотри в выборку всех заданий по статусу активности";
     private static final String ERROR_MESSAGE_DELETE = "Смотри в удаление записи";
     private static final String ERROR_MESSAGE_UPDATE = "Смотри в обновление записи";
+    private static final String QUERY_ALL_ITEMS = "From Item";
+    private static final String QUERY_ALL_ACTIVE_ITEMS = "From Item WHERE done=:done";
+    private static final boolean FLAG_FOR_ACTIVE_ITEM = false;
 
     private ItemDao() {
 
@@ -27,76 +32,70 @@ public class ItemDao {
     }
 
     public void add(Item item) {
-        Transaction transaction = null;
-        try (Session session = POOL_CONNECTION.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            session.save(item);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            LOG.error(ERROR_MESSAGE_ADD, e);
-        }
+        transactionWithOutResult(
+                session -> session.save(item),
+                ERROR_MESSAGE_ADD
+        );
     }
 
     public void update(Item item) {
-        Transaction transaction = null;
-        try (Session session = POOL_CONNECTION.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            session.update(item);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            LOG.error(ERROR_MESSAGE_UPDATE, e);
-        }
+        transactionWithOutResult(session -> session.update(item),
+                ERROR_MESSAGE_UPDATE
+        );
     }
 
     public void delete(Item item) {
-        Transaction transaction = null;
-        try (Session session = POOL_CONNECTION.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            session.delete(item);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            LOG.error(ERROR_MESSAGE_DELETE, e);
-        }
+        transactionWithOutResult(session -> session.delete(item),
+                ERROR_MESSAGE_DELETE
+        );
     }
 
     public List<Item> findAll() {
-        List<Item> allItems = new ArrayList<>();
-        Transaction transaction = null;
-        try (Session session = POOL_CONNECTION.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            allItems = session.createQuery("From Item").list();
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            LOG.error(ERROR_MESSAGE_FIND_ALL, e);
-        }
-        return allItems;
+        return transactionWithResult(
+                session -> session.createQuery(QUERY_ALL_ITEMS).list(),
+                ERROR_MESSAGE_FIND_ALL
+        );
     }
 
+
     public List<Item> findAllActive() {
-        List<Item> activeItems = new ArrayList<>();
+        return transactionWithResult(
+                session -> {
+                    Query query = session.createQuery(QUERY_ALL_ACTIVE_ITEMS);
+                    query.setParameter("done", FLAG_FOR_ACTIVE_ITEM);
+                    return query.list();
+                },
+                ERROR_MESSAGE_FIND_BY_STATUS
+        );
+    }
+
+    private <T> T transactionWithResult(final Function<Session, T> command, String message) {
+        T result = null;
         Transaction transaction = null;
-        try (Session session = POOL_CONNECTION.getSessionFactory().openSession()) {
+        try (final Session session = POOL_CONNECTION.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            activeItems = session.createQuery("From Item WHERE done=false").list();
+            result = command.apply(session);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            LOG.error(ERROR_MESSAGE_FIND_BY_STATUS, e);
+            LOG.error(message, e);
         }
-        return activeItems;
+        return result;
+    }
+
+    private void transactionWithOutResult(final Consumer<Session> command, String message) {
+        Transaction transaction = null;
+        try (final Session session = POOL_CONNECTION.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            command.accept(session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            LOG.error(message, e);
+        }
     }
 }

@@ -11,25 +11,23 @@ $(document).ready(function () {
                 saveItem(desc, status)
             }
         });
-    })
-});
-
-function initPage() {
-    let activeTaskUrl = '/get-active';
-    let allTaskUrl = '/get-all';
-    if ($("#show-all").prop('checked')) {
-        showTasks(allTaskUrl);
-    } else {
-        showTasks(activeTaskUrl);
-    }
+    });
 
     $('.check :checkbox').change(function () {
         if ($("#show-all").prop('checked')) {
-            showTasks(allTaskUrl);
+            showTasks('/get-all');
         } else {
-            showTasks(activeTaskUrl);
+            showTasks('/get-active');
         }
     });
+});
+
+function initPage() {
+    if ($("#show-all").prop('checked')) {
+        showTasks('/get-all');
+    } else {
+        showTasks('/get-active');
+    }
 }
 
 function createItem() {
